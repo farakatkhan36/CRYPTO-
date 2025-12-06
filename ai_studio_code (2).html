@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Calculator Live</title>
+    <style>
+        /* CSS - Green Theme & Layout */
+        :root {
+            --primary-green: #00ff41;
+            --dark-green: #001a00;
+            --card-bg: #002b00;
+            --text-white: #ffffff;
+            --border-color: #004d00;
+            --chart-bg: #002b00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace; /* Hacker/Tech vibe */
+        }
+
+        body {
+            background-color: var(--dark-green);
+            color: var(--text-white);
+            padding-bottom: 50px;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary-green);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-green);
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 255, 65, 0.1);
+        }
+
+        .card-header {
+            color: var(--primary-green);
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Calculator Inputs */
+        .calc-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--dark-green);
+            border: 1px solid var(--primary-green);
+            color: var(--text-white);
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .result-display {
+            background-color: #001100;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-green);
+            border: 1px dashed var(--primary-green);
+            text-shadow: 0 0 5px var(--primary-green);
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary-green);
+            color: var(--dark-green);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #00cc33;
+            box-shadow: 0 0 10px var(--primary-green);
+        }
+
+        .refresh-btn {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+        }
+
+        /* Exchange List */
+        .exchange-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .exchange-row:last-child { border-bottom: none; }
+        
+        .rate-up { color: var(--primary-green); }
+        .platform-name { font-weight: bold; }
+
+        /* Modal / Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 20, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary-green);
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            border-radius: 10px;
+            animation: fadeIn 0.5s;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .modal h2 { margin-bottom: 10px; }
+        .verified-badge {
+            margin: 15px 0;
+            font-size: 0.9rem;
+            color: #ddd;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 5px;
+            background: #001a00;
+        }
+
+        .modal-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .close-btn {
+            background-color: transparent;
+            border: 1px solid var(--primary-green);
+            color: var(--text-white);
+        }
+
+        /* Chart Container */
+        .tradingview-widget-container {
+            height: 400px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- WELCOME MODAL -->
+    <div id="welcomeModal" class="modal-overlay">
+        <div class="modal">
+            <h2>Welcome 🎉</h2>
+            
+            <div class="verified-badge">
+                <p>यह सरकार द्वारा सत्यापित है</p>
+                <p>This is verified by the government</p>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn" onclick="window.open('https://t.me/CryptoCalculater', '_blank')">Join Telegram</button>
+                <button class="btn close-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <h1>Crypto Calculator</h1>
+    </header>
+
+    <div class="container">
+        
+        <!-- CALCULATOR SECTION -->
+        <div class="card">
+            <div class="card-header">
+                <span>CONVERTER</span>
+                <span id="live-indicator" style="animation: blink 2s infinite;">● LIVE</span>
+            </div>
+            
+            <div class="calc-row">
+                <input type="number" id="amount" placeholder="Enter Amount" value="1" oninput="calculate()">
+                <select id="crypto-select" onchange="updateChart(); fetchRates();">
+                    <option value="tether" data-symbol="USDT">USDT</option>
+                    <option value="bitcoin" data-symbol="BTC">BTC</option>
+                    <option value="ethereum" data-symbol="ETH">ETH</option>
+                    <option value="tron" data-symbol="TRX">TRX</option>
+                    <option value="binancecoin" data-symbol="BNB">BNB</option>
+                </select>
+            </div>
+
+            <div class="calc-row">
+                <select id="fiat-select" onchange="fetchRates()">
+                    <option value="inr">INR (₹)</option>
+                    <option value="usd">USD ($)</option>
+                    <option value="eur">EUR (€)</option>
+                    <option value="pkr">PKR (Rs)</option>
+                    <option value="bdt">BDT (৳)</option>
+                </select>
+            </div>
+
+            <div class="result-display" id="result">
+                0.00
+            </div>
+        </div>
+
+        <!-- LIVE RATES / EXCHANGES -->
+        <div class="card">
+            <div class="card-header">
+                <span>EXCHANGE RATES</span>
+                <button class="btn refresh-btn" onclick="fetchRates()">Refresh ↻</button>
+            </div>
+
+            <div id="rates-container">
+                <div class="exchange-row">
+                    <span class="platform-name">Global Market</span>
+                    <span class="rate-up" id="market-rate">Loading...</span>
+                </div>
+                <div class="exchange-row">
+                    <span class="platform-name">Binance (P2P)</span>
+                    <span class="rate-up" id="binance-rate">Loading...</span>
+                </div>
+                <div class="exchange-row">
+                    <span class="platform-name">Mudrex</span>
+                    <span class="rate-up" id="mudrex-rate">Loading...</span>
+                </div>
+                <div class="exchange-row">
+                    <span class="platform-name">Bybit (P2P)</span>
+                    <span class="rate-up" id="bybit-rate">Loading...</span>
+                </div>
+                <div class="exchange-row">
+                    <span class="platform-name">Jio Exchange</span>
+                    <span style="color: yellow;">SOON</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHART SECTION -->
+        <div class="card">
+            <div class="card-header">LIVE CHART 📊</div>
+            <div class="tradingview-widget-container">
+                <div id="tradingview_chart"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        // 1. Modal Logic
+        function closeModal() {
+            document.getElementById('welcomeModal').style.display = 'none';
+        }
+
+        // 2. Global Variables
+        let currentPrice = 0;
+        
+        // 3. TradingView Chart Logic (UPDATED FOR RED/GREEN CANDLES)
+        function updateChart() {
+            const cryptoSelect = document.getElementById('crypto-select');
+            const selectedOption = cryptoSelect.options[cryptoSelect.selectedIndex];
+            const symbol = selectedOption.getAttribute('data-symbol');
+            
+            // Map symbols to TradingView format
+            // Defaulting to Binance pairs for best red/green data
+            let tvSymbol = "BINANCE:" + symbol + "USDT";
+            
+            // Special Case: If showing USDT, we show USDT/INR because USDT/USDT is a flat line
+            if(symbol === 'USDT') tvSymbol = "BINANCE:USDTINR"; 
+
+            new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": tvSymbol,
+                "interval": "D",
+                "timezone": "Asia/Kolkata",
+                "theme": "dark",
+                "style": "1", // Style 1 = CANDLESTICK (Red/Green)
+                "locale": "en",
+                "toolbar_bg": "#002b00",
+                "enable_publishing": false,
+                "allow_symbol_change": true,
+                "container_id": "tradingview_chart",
+                "backgroundColor": "#002b00",
+                "gridLineColor": "#004d00",
+                "hide_top_toolbar": false,
+                "save_image": false
+            });
+        }
+
+        // 4. Fetch Rates (Backend Simulation)
+        async function fetchRates() {
+            const cryptoId = document.getElementById('crypto-select').value; 
+            const fiat = document.getElementById('fiat-select').value;       
+            
+            document.getElementById('market-rate').innerText = "Updating...";
+            
+            try {
+                const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoId}&vs_currencies=${fiat}`);
+                const data = await response.json();
+                
+                const rate = data[cryptoId][fiat];
+                currentPrice = rate;
+
+                // Update Calculator
+                calculate();
+
+                // Update Exchange Rates (Simulated Spread)
+                const symbol = fiat.toUpperCase();
+                
+                document.getElementById('market-rate').innerText = `${rate} ${symbol}`;
+                document.getElementById('binance-rate').innerText = `${(rate * 1.015).toFixed(2)} ${symbol}`;
+                document.getElementById('mudrex-rate').innerText = `${(rate * 1.005).toFixed(2)} ${symbol}`;
+                document.getElementById('bybit-rate').innerText = `${(rate * 1.012).toFixed(2)} ${symbol}`;
+
+            } catch (error) {
+                console.error("Error fetching rates:", error);
+                document.getElementById('result').innerText = "API Error";
+            }
+        }
+
+        // 5. Calculation Logic
+        function calculate() {
+            const amount = document.getElementById('amount').value;
+            const fiat = document.getElementById('fiat-select').value.toUpperCase();
+            
+            if(currentPrice > 0) {
+                const total = (amount * currentPrice).toFixed(2);
+                document.getElementById('result').innerText = `${total} ${fiat}`;
+            }
+        }
+
+        // Initialize on Load
+        window.onload = function() {
+            fetchRates();
+            updateChart();
+        };
+
+    </script>
+</body>
+</html>
